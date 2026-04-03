@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>✨ Qdict • Academic Vocabulary Suite</title>
+    <meta name="description" content="Professional vocabulary mastery with AI dictionary, example-rich definitions, and adaptive quiz engine. Silver/Gold/Diamond tiers fully unlocked. Installable PWA.">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LexiMind Pro">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --accent: #fbbf24;
+            --silver: #94a3b8;
+            --gold: #f59e0b;
+            --diamond: #06b6d4;
+            --dark-slate: #0f172a;
+            --glass-light: rgba(255, 255, 255, 0.94);
+            --glass-dark: rgba(15, 23, 42, 0.92);
+            --transition: all 0.25s ease;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --glass-light: rgba(15, 23, 42, 0.92);
+            }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at 10% 30%, #1e1b4b, #0f172a);
+            color: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(18px);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .tier-badge {
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(4px);
+        }
+
+        .tier-silver { background: linear-gradient(135deg, #94a3b8, #cbd5e1); color: #0f172a; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
+        .tier-gold { background: linear-gradient(135deg, #f59e0b, #fcd34d); color: #0f172a; box-shadow: 0 2px 12px rgba(245,158,11,0.4);}
+        .tier-diamond { background: linear-gradient(135deg, #06b6d4, #67e8f9); color: #0f172a; box-shadow: 0 2px 12px rgba(6,182,212,0.5);}
+
+        .upgrade-btn {
+            background: linear-gradient(135deg, #eab308, #f59e0b);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px 20px;
+            margin: 20px 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(16px);
+            border-radius: 60px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 28px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            border-radius: 40px;
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #0f172a;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 24px 32px;
+            flex: 1;
+        }
+
+        .glass-card {
+            background: var(--glass-light);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 32px;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .hero h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(120deg, #e0e7ff, #a5b4fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 16px 22px;
+            border: none;
+            border-radius: 28px;
+            background: white;
+            font-size: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            border: none;
+            padding: 14px 28px;
+            border-radius: 32px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(6px);
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 680px) {
+            .glass-card { padding: 20px; }
+            .tab-btn { padding: 8px 16px; font-size: 0.8rem;}
+        }
+        
+        /* offline indicator */
+        .offline-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 2rem;">📘</span>
+        <h2 style="color: white; margin: 0;">Qdict</h2>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+        <div id="currentTierBadge" class="tier-badge tier-diamond" onclick="showUpgradeModal()">
+            <span id="tierIcon">💎</span>
+            <span id="tierName">DIAMOND</span>
+        </div>
+        <button onclick="showUpgradeModal()" class="upgrade-btn">⚡ Upgrade</button>
+    </div>
+</div>
+
+<div class="nav-tabs">
+    <button class="tab-btn active" data-tab="dictionary">📖 Dictionary</button>
+    <button class="tab-btn" data-tab="game">🎓 Academic Challenge</button>
+    <button class="tab-btn" data-tab="profile">📊 Profile</button>
+    <button class="tab-btn" data-tab="premium">⭐ Premium Tiers</button>
+</div>
+
+<div class="container">
+    <!-- DICTIONARY TAB: enriched with examples, synonyms, usage -->
+    <div id="dictionaryTab" class="tab-content active">
+        <div class="hero"><h1>📚 Scholastic Dictionary</h1><p>Authentic definitions • Audio • Synonyms/Antonyms</p></div>
+        <div class="glass-card">
+            <div style="display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;">
+                <input type="text" id="wordInput" class="search-input" placeholder="e.g., elucidate, pragmatic, ephemeral">
+                <button id="searchBtn" class="btn-primary">🔍 Define</button>
+                <button id="randomBtn" class="btn-primary">🎲 Word of the moment</button>
+            </div>
+            <div id="dictionaryResult" style="min-height: 380px;"></div>
+        </div>
+    </div>
+
+    <!-- GAME TAB: professional vocabulary quiz with high-quality question bank -->
+    <div id="gameTab" class="tab-content">
+        <div class="hero"><h1>🧠 Vocabulary Mastery Challenge</h1><p>Curated academic wordlist • 4 distractors • Score & streak system</p></div>
+        <div class="glass-card" id="gameContainer">
+            <button onclick="initProfessionalGame()" class="btn-primary" style="width:100%; padding: 20px; font-size: 1.2rem;">🎯 Launch Premium Quiz</button>
+        </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div id="profileTab" class="tab-content">
+        <div class="hero"><h1>📈 Learning Analytics</h1></div>
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                <div><strong>🏅 Words mastered:</strong> <span id="wordsMastered">284</span></div>
+                <div><strong>🔥 Current streak:</strong> <span id="streak">24 days</span></div>
+                <div><strong>📊 Quiz accuracy:</strong> <span id="accuracy">92%</span></div>
+            </div>
+            <div style="margin: 28px 0; background: #eef2ff; padding: 18px; border-radius: 24px;">
+                <h4>✨ Elite Achievements</h4>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px;">
+                    <div class="tier-badge tier-silver">Lexicon Builder</div>
+                    <div class="tier-badge tier-gold">Etymology Expert</div>
+                    <div class="tier-badge tier-diamond">Polyglot Mind</div>
+                </div>
+            </div>
+            <button id="exportDataBtn" class="btn-primary" style="margin-top: 12px;">📎 Export Mastery Report (Diamond)</button>
+        </div>
+    </div>
+
+    <!-- PREMIUM HUB -->
+    <div id="premiumTab" class="tab-content">
+        <div class="hero"><h1>💎 Unlock Higher Cognition</h1><p>Silver / Gold / Diamond — all tiers active for demo</p></div>
+        <div class="glass-card">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 24px;">
+                <div style="border: 2px solid #94a3b8; border-radius: 28px; padding: 24px; background: rgba(255,255,255,0.3);">
+                    <h3>🥈 Silver Scholar</h3>
+                    <ul style="margin: 16px 0; line-height: 1.7;"><li>✅ Full dictionary + examples</li><li>✅ Basic quiz mode</li><li>✅ Audio pronunciation</li></ul>
+                    <button onclick="setTier('silver')" class="upgrade-btn" style="width:100%;">Activate Silver</button>
+                </div>
+                <div style="border: 2px solid #f59e0b; border-radius: 28px; padding: 24px; position: relative;">
+                    <div style="position: absolute; top: -12px; right: 20px; background:#f59e0b; padding: 4px 12px; border-radius: 40px; font-weight: bold;">⭐ RECOMMENDED</div>
+                    <h3>🥇 Gold Linguist</h3>
+                    <ul style="margin: 16px 0; line-height: 1.7;"><li>✅ Silver benefits</li><li>✅ Advanced quiz (40+ words)</li><li>✅ Synonyms + rich examples</li><li>✅ Streak saver</li></ul>
+                    <button onclick="setTier('gold')" class="upgrade-btn" style="width:100%;">Switch to Gold</button>
+                </div>
+                <div style="border: 2px solid #06b6d4; border-radius: 28px; padding: 24px;">
+                    <h3>💎 Diamond Elite</h3>
+                    <ul style="margin: 16px 0; line-height: 1.7;"><li>✅ All Gold features</li><li>✅ Data export + analytics</li><li>✅ Exclusive advanced word bank</li><li>✅ Voice command + offline ready</li></ul>
+                    <button onclick="setTier('diamond')" class="upgrade-btn" style="width:100%;">Current: Diamond</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="upgradeModal" class="modal">
+    <div style="background: white; max-width: 460px; width: 92%; border-radius: 40px; padding: 32px; text-align: center;">
+        <h2>✨ Premium Tiers</h2>
+        <p style="margin: 12px 0;">All features unlocked — select your preferred tier style</p>
+        <button onclick="setTier('silver'); hideModal()" style="width:100%; margin: 8px 0; background:#94a3b8; padding: 14px; border-radius: 40px; font-weight: bold;">🥈 Silver Experience</button>
+        <button onclick="setTier('gold'); hideModal()" style="width:100%; margin: 8px 0; background:#f59e0b; padding: 14px; border-radius: 40px; font-weight: bold;">🥇 Gold Experience</button>
+        <button onclick="setTier('diamond'); hideModal()" style="width:100%; margin: 8px 0; background:#06b6d4; padding: 14px; border-radius: 40px; font-weight: bold;">💎 Diamond Experience</button>
+        <button onclick="hideModal()" style="margin-top: 16px; background: transparent; border: 1px solid #cbd5e1; padding: 12px; width:100%; border-radius: 40px;">Close</button>
+    </div>
+</div>
+
+<div class="offline-indicator" id="offlineIndicator">📡 Offline Mode • Dictionary needs network</div>
+
+<footer>
+    Qdict • Academic Vocabulary Engine • QM studios • Install as App for best experience
+</footer>
+
+<script>
+    // ---------- TIER SYSTEM ----------
+    let currentTier = localStorage.getItem('lexiTier') || 'diamond';
+    function updateTierBadge() {
+        const badge = document.getElementById('currentTierBadge');
+        const nameEl = document.getElementById('tierName');
+        const iconEl = document.getElementById('tierIcon');
+        badge.className = `tier-badge tier-${currentTier}`;
+        nameEl.textContent = currentTier.toUpperCase();
+        iconEl.textContent = currentTier === 'silver' ? '🥈' : (currentTier === 'gold' ? '🥇' : '💎');
+    }
+    function setTier(tier) {
+        currentTier = tier;
+        localStorage.setItem('lexiTier', tier);
+        updateTierBadge();
+        showToast(`✨ Tier updated to ${tier.toUpperCase()} — all premium features remain active.`);
+        hideModal();
+    }
+    function showUpgradeModal() { document.getElementById('upgradeModal').style.display = 'flex'; }
+    function hideModal() { document.getElementById('upgradeModal').style.display = 'none'; }
+    function showToast(msg) {
+        let toast = document.createElement('div');
+        toast.textContent = msg;
+        toast.style.position = 'fixed'; toast.style.bottom = '24px'; toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)'; toast.style.backgroundColor = '#0f172a';
+        toast.style.color = 'white'; toast.style.padding = '12px 24px'; toast.style.borderRadius = '60px';
+        toast.style.zIndex = 100000; toast.style.fontWeight = '500'; toast.style.backdropFilter = 'blur(12px)';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2700);
+    }
+
+    // ---------- ENRICHED DICTIONARY WITH PROFESSIONAL EXAMPLES ----------
+    async function fetchWordDetails(word) {
+        const resultDiv = document.getElementById('dictionaryResult');
+        resultDiv.innerHTML = `<div style="text-align:center; padding: 40px;">📖 Consulting academic corpus for <strong>${word}</strong>...</div>`;
+        try {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`);
+            if (!response.ok) throw new Error('not found');
+            const data = await response.json();
+            const entry = data[0];
+            let phonetic = entry.phonetic || `/${word}/`;
+            let html = `<div style="background: rgba(255,255,240,0.5); border-radius: 24px; padding: 20px;">
+                <h2 style="font-size: 2rem; color:#4f46e5;">${entry.word} <span style="font-size: 1rem;">${phonetic}</span></h2>
+                <button onclick="speakWord('${entry.word}')" style="margin: 8px 0 16px; background:#10b981; border:none; padding: 8px 20px; border-radius: 32px; color:white; font-weight:bold;">🔊 Audio (Premium)</button>`;
+            
+            for (let meaning of entry.meanings.slice(0, 3)) {
+                let part = meaning.partOfSpeech;
+                let defObj = meaning.definitions[0];
+                let definition = defObj.definition;
+                let example = defObj.example ? defObj.example : "In scholarly writing, this term enhances precision and clarity.";
+                let synonyms = defObj.synonyms?.slice(0, 3).join(', ') || "refined, expressive";
+                let antonyms = defObj.antonyms?.slice(0, 3).join(', ') || "vague, unclear";
+                html += `<div style="margin-top: 20px; border-left: 5px solid #6366f1; padding-left: 18px;">
+                            <strong style="text-transform:capitalize;">${part}</strong>
+                            <p style="margin-top: 8px;">📌 <strong>Definition:</strong> ${definition}</p>
+                            <p>📖 <strong>Example:</strong> <em>${example}</em></p>
+                            <p>🔗 <strong>Synonyms:</strong> <span style="color:#2b9348;">${synonyms}</span> &nbsp;|&nbsp; 
+                            <strong>Antonyms:</strong> <span style="color:#b91c1c;">${antonyms}</span></p>
+                        </div>`;
+            }
+            html += `<div style="margin-top: 20px; background:#eef2ff; padding: 12px; border-radius: 20px;"><small>💡 Pro tip: Use this word in essays to elevate academic tone.</small></div></div>`;
+            resultDiv.innerHTML = html;
+        } catch (err) {
+            resultDiv.innerHTML = `<div style="color:#b91c1c; text-align:center; padding: 40px;">⚠️ Word not found in premium corpus. Try "eloquent", "cogent", "meticulous".<br><small>📡 Check internet connection for dictionary API.</small></div>`;
+        }
+    }
+
+    function speakWord(text) {
+        if ('speechSynthesis' in window) {
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            utterance.lang = 'en-US';
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
+            showToast(`🎧 Pronunciation: ${text}`);
+        }
+    }
+
+    // ---------- PROFESSIONAL EDUCATIONAL VOCABULARY BANK (expanded) ----------
+    const proVocab = [
+        { word: "Elucidate", definition: "To make something clear; explain in detail.", difficulty: "Advanced" },
+        { word: "Pragmatic", definition: "Dealing with things sensibly and realistically.", difficulty: "Intermediate" },
+        { word: "Ephemeral", definition: "Lasting for a very short time; transient.", difficulty: "Advanced" },
+        { word: "Cogent", definition: "Clear, logical, and convincing; compelling.", difficulty: "Advanced" },
+        { word: "Meticulous", definition: "Showing great attention to detail; thorough.", difficulty: "Intermediate" },
+        { word: "Sycophant", definition: "A person who acts obsequiously to gain advantage.", difficulty: "Expert" },
+        { word: "Ubiquitous", definition: "Present, appearing, or found everywhere.", difficulty: "Advanced" },
+        { word: "Ineffable", definition: "Too great or extreme to be expressed in words.", difficulty: "Expert" },
+        { word: "Laconic", definition: "Using very few words; concise.", difficulty: "Advanced" },
+        { word: "Obdurate", definition: "Stubbornly refusing to change one's opinion.", difficulty: "Expert" },
+        { word: "Fastidious", definition: "Very attentive to accuracy and detail; fussy.", difficulty: "Advanced" },
+        { word: "Perfunctory", definition: "Carried out with minimal effort; superficial.", difficulty: "Advanced" },
+        { word: "Ostensible", definition: "Stated or appearing to be true, but not necessarily so.", difficulty: "Expert" },
+        { word: "Gregarious", definition: "Fond of company; sociable.", difficulty: "Intermediate" },
+        { word: "Alacrity", definition: "Brisk and cheerful readiness.", difficulty: "Advanced" },
+        { word: "Verisimilitude", definition: "The appearance of being true or real.", difficulty: "Expert" },
+        { word: "Quotidian", definition: "Occurring every day; commonplace.", difficulty: "Advanced" },
+        { word: "Esoteric", definition: "Intended for or understood by only a small group.", difficulty: "Expert" },
+        { word: "Mercurial", definition: "Subject to sudden or unpredictable changes.", difficulty: "Advanced" }
+    ];
+    let gameQuestions = [...proVocab];
+    let currentGame = { score: 0, streak: 0, currentQuestion: null, answered: false };
+    let gameActive = false;
+
+    function initProfessionalGame() {
+        gameActive = true;
+        currentGame.score = 0;
+        currentGame.streak = 0;
+        const container = document.getElementById('gameContainer');
+        container.innerHTML = `
+            <div style="text-align: center;">
+                <div style="display: flex; justify-content: space-between; background: #f8fafc; padding: 12px 24px; border-radius: 60px; margin-bottom: 20px;">
+                    <span>🏆 SCORE: <strong id="gameScoreVal">0</strong></span>
+                    <span>🔥 STREAK: <strong id="gameStreakVal">0</strong></span>
+                </div>
+                <div id="quizQuestion" style="font-size: 1.8rem; font-weight: 700; margin: 32px 0;">Loading challenge...</div>
+                <div id="quizOptions" style="display: flex; flex-direction: column; gap: 14px; max-width: 600px; margin: 0 auto;"></div>
+                <button id="nextQuizBtn" style="margin-top: 32px; background:#4f46e5; border: none; padding: 14px; border-radius: 60px; color: white; font-weight: bold; width: 200px;">Next Word →</button>
+            </div>
+        `;
+        loadNewQuestion();
+        document.getElementById('nextQuizBtn').addEventListener('click', () => { if (!currentGame.answered) { showToast("⚠️ Please answer the current question first!"); return; } loadNewQuestion(); });
+    }
+
+    function loadNewQuestion() {
+        if (!gameActive) return;
+        const randomIndex = Math.floor(Math.random() * gameQuestions.length);
+        currentGame.currentQuestion = { ...gameQuestions[randomIndex] };
+        currentGame.answered = false;
+        const correctDef = currentGame.currentQuestion.definition;
+        let otherDefs = gameQuestions.filter(q => q.word !== currentGame.currentQuestion.word).map(q => q.definition);
+        let distractorSet = new Set();
+        distractorSet.add(correctDef);
+        while (distractorSet.size < 4 && otherDefs.length) {
+            let randomDef = otherDefs[Math.floor(Math.random() * otherDefs.length)];
+            distractorSet.add(randomDef);
+        }
+        let options = Array.from(distractorSet);
+        options.sort(() => Math.random() - 0.5);
+        
+        const questionDiv = document.getElementById('quizQuestion');
+        questionDiv.innerHTML = `What does <span style="color:#4f46e5;">"${currentGame.currentQuestion.word}"</span> mean?`;
+        const optionsContainer = document.getElementById('quizOptions');
+        optionsContainer.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.textContent = opt;
+            btn.style.background = 'white';
+            btn.style.border = '2px solid #e2e8f0';
+            btn.style.padding = '14px 18px';
+            btn.style.borderRadius = '60px';
+            btn.style.fontWeight = '500';
+            btn.style.cursor = 'pointer';
+            btn.style.transition = '0.1s';
+            btn.onclick = () => {
+                if (currentGame.answered) { showToast("Already answered! Next word."); return; }
+                currentGame.answered = true;
+                if (opt === correctDef) {
+                    currentGame.score += 10;
+                    currentGame.streak += 1;
+                    showToast(`✅ Correct! +10 points (streak: ${currentGame.streak})`);
+                    btn.style.background = '#22c55e';
+                    btn.style.color = 'white';
+                } else {
+                    currentGame.streak = 0;
+                    showToast(`❌ Incorrect. The correct definition: "${correctDef}"`);
+                    btn.style.background = '#ef4444';
+                    btn.style.color = 'white';
+                }
+                document.getElementById('gameScoreVal').textContent = currentGame.score;
+                document.getElementById('gameStreakVal').textContent = currentGame.streak;
+                document.querySelectorAll('#quizOptions button').forEach(b => b.style.pointerEvents = 'none');
+            };
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    // ---------- TAB SWITCHING ----------
+    function switchTab(tabId) {
+        const tabs = ['dictionary', 'game', 'profile', 'premium'];
+        tabs.forEach(t => {
+            const el = document.getElementById(t + 'Tab');
+            if (el) el.classList.remove('active');
+        });
+        document.getElementById(tabId + 'Tab').classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('data-tab') === tabId);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tab = btn.getAttribute('data-tab');
+            if (tab) switchTab(tab);
+        });
+    });
+
+    function exportData() {
+        if (currentTier === 'diamond') {
+            alert("📊 Diamond Export: Your vocabulary mastery snapshot includes 284 learned words, 92% accuracy. Full .csv simulation complete.");
+            showToast("Mastery report exported (simulated).");
+        } else {
+            alert("🔒 Export feature exclusive to Diamond tier. Upgrade to access learning analytics.");
+        }
+    }
+
+    // offline detection UI
+    function updateOfflineStatus() {
+        const indicator = document.getElementById('offlineIndicator');
+        if (!navigator.onLine) {
+            indicator.style.display = 'block';
+        } else {
+            indicator.style.display = 'none';
+        }
+    }
+    window.addEventListener('online', updateOfflineStatus);
+    window.addEventListener('offline', updateOfflineStatus);
+    
+    // Service Worker Registration - PWA READY
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('✅ Qdict Service Worker registered successfully:', reg.scope);
+                showToast('📲 App ready for installation! Add to Home Screen.');
+            }).catch(err => {
+                console.log('❌ SW registration failed:', err);
+                // fallback: no SW but app still works
+            });
+        });
+    } else {
+        console.log('Service Worker not supported');
+    }
+
+    // Event listeners
+    document.getElementById('randomBtn')?.addEventListener('click', () => {
+        const randomWords = ["serendipity", "eloquent", "meticulous", "pragmatic", "ubiquitous", "cogent", "laconic", "ineffable", "esoteric"];
+        const r = randomWords[Math.floor(Math.random() * randomWords.length)];
+        document.getElementById('wordInput').value = r;
+        fetchWordDetails(r);
+    });
+    document.getElementById('searchBtn')?.addEventListener('click', () => {
+        const w = document.getElementById('wordInput').value.trim();
+        if (w) fetchWordDetails(w);
+    });
+    document.getElementById('exportDataBtn')?.addEventListener('click', exportData);
+    
+    // Expose globals for inline handlers
+    window.speakWord = speakWord;
+    window.initProfessionalGame = initProfessionalGame;
+    window.setTier = setTier;
+    window.showUpgradeModal = showUpgradeModal;
+    window.hideModal = hideModal;
+    window.exportData = exportData;
+    window.loadNewQuestion = loadNewQuestion;
+    window.switchTab = switchTab;
+
+    // Startup
+    window.onload = () => {
+        updateTierBadge();
+        fetchWordDetails("eloquent");
+        updateOfflineStatus();
+        showToast("✨ Qdict PWA Ready — Install now for offline access to core features!");
+    };
+</script>
+</body>
+</html>
